@@ -1,3 +1,4 @@
+// vim: ts=2 sw=2 expandtab
 /************************************************************************************//**
 * \file         port\linux\xcptransport.c
 * \brief        XCP transport layer interface source file.
@@ -44,6 +45,8 @@
 #include <termios.h>                                  /* POSIX terminal control        */
 #include "xcpmaster.h"                                /* XCP master protocol module    */
 #include "timeutil.h"                                 /* time utility module           */
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 
 
@@ -73,6 +76,9 @@ static speed_t   XcpTransportGetBaudrateMask(sb_uint32 baudrate);
 static tXcpTransportResponsePacket responsePacket;
 static sb_int32 hUart = UART_INVALID_HANDLE;
 
+static struct sockaddr_in server;
+static int sock;
+
 
 /************************************************************************************//**
 ** \brief     Initializes the communication interface used by this transport layer.
@@ -83,61 +89,18 @@ static sb_int32 hUart = UART_INVALID_HANDLE;
 ****************************************************************************************/
 sb_uint8 XcpTransportInit(sb_char *device, sb_uint32 baudrate)
 {
-  struct termios options;
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if(sock == -1) {
+    return SB_FALSE;
+  }
 
-  /* open the port */
-  hUart = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-  /* verify the result */
-  if (hUart == UART_INVALID_HANDLE)
-  {
+  server.sin_addr.s_addr = inet_addr("192.168.74.131");
+  server.sin_family = AF_INET;
+  server.sin_port = htons(2101);
+
+  if(connect(sock, (struct sockaddr*) &server, sizeof(server)) < 0) {
     return SB_FALSE;
   }
-  /* configure the device to block during read operations */
-  if (fcntl(hUart, F_SETFL, 0) == -1)
-  {
-    XcpTransportClose();
-    return SB_FALSE;
-  }
-  /* get the current options for the port */
-  if (tcgetattr(hUart, &options) == -1)
-  {
-    XcpTransportClose();
-    return SB_FALSE;
-  }
-  /* configure the baudrate */
-  if (cfsetispeed(&options, XcpTransportGetBaudrateMask(baudrate)) == -1)
-  {
-    XcpTransportClose();
-    return SB_FALSE;
-  }
-  if (cfsetospeed(&options, XcpTransportGetBaudrateMask(baudrate)) == -1)
-  {
-    XcpTransportClose();
-    return SB_FALSE;
-  }
-  /* enable the receiver and set local mode */
-  options.c_cflag |= (CLOCAL | CREAD);
-  /* configure 8-n-1 */
-  options.c_cflag &= ~PARENB;
-  options.c_cflag &= ~CSTOPB;
-  options.c_cflag &= ~CSIZE;
-  options.c_cflag |= CS8;
-  /* disable hardware flow control */
-  options.c_cflag &= ~CRTSCTS;
-  /* configure raw input */
-  options.c_lflag &= ~(ICANON | ISIG);
-  /* configure raw output */
-  options.c_oflag &= ~OPOST;
-  /* configure timeouts */
-  options.c_cc[VMIN]  = 0;
-  options.c_cc[VTIME] = UART_RX_TIMEOUT_MIN_MS/100; /* 1/10th of a second */
-  /* set the new options for the port */
-  if (tcsetattr(hUart, TCSAFLUSH, &options) == -1)
-  {
-    XcpTransportClose();
-    return SB_FALSE;
-  }
-  /* success */
   return SB_TRUE;
 } /*** end of XcpTransportInit ***/
 
@@ -175,10 +138,8 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
     xcpUartBuffer[cnt+1] = data[cnt];
   }
 
-  bytesSent = write(hUart, xcpUartBuffer, xcpUartLen);
-
-  if (bytesSent != xcpUartLen)
-  {
+  if(send(sock, xcpUartBuffer, xcpUartLen, 0) < 0) {
+    printf(" * send failed\n");
     return SB_FALSE;
   }
 
@@ -191,8 +152,8 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
   uartReadDataPtr = &responsePacket.len;
   while(bytesToRead > 0)
   {
-    result = read(hUart, uartReadDataPtr, bytesToRead);
-    if (result != -1)
+    result = recv(sock, uartReadDataPtr, bytesToRead, MSG_DONTWAIT);
+    if (result >= 0)
     {
       bytesRead = result;
       /* update the bytes that were already read */
@@ -203,6 +164,7 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
     if ( (bytesToRead > 0) && (TimeUtilGetSystemTimeMs() >= timeoutTime) )
     {
       /* timeout occurred */
+      printf(" * read timeout\n");
       return SB_FALSE;
     }
   }
@@ -212,8 +174,8 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
   uartReadDataPtr = &responsePacket.data[0];
   while(bytesToRead > 0)
   {
-    result = read(hUart, uartReadDataPtr, bytesToRead);
-    if (result != -1)
+    result = recv(sock, uartReadDataPtr, bytesToRead, MSG_DONTWAIT);
+    if (result >= 0)
     {
       bytesRead = result;
       /* update the bytes that were already read */
@@ -224,6 +186,7 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
     if ( (bytesToRead > 0) && (TimeUtilGetSystemTimeMs() >= timeoutTime) )
     {
       /* timeout occurred */
+      printf(" * read timeout\n");
       return SB_FALSE;
     }
   }
@@ -252,14 +215,7 @@ tXcpTransportResponsePacket *XcpTransportReadResponsePacket(void)
 ****************************************************************************************/
 void XcpTransportClose(void)
 {
-  /* close the COM port handle if valid */
-  if (hUart != UART_INVALID_HANDLE)
-  {
-    close(hUart);
-  }
-
-  /* set handles to invalid */
-  hUart = UART_INVALID_HANDLE;
+  close(sock);
 } /*** end of XcpTransportClose ***/
 
 
