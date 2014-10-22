@@ -1,7 +1,7 @@
 /************************************************************************************//**
 * \file         port\xcptransport.h
 * \brief        XCP transport layer interface header file.
-* \ingroup      SerialBoot
+* \ingroup      openblt-tcp-boot
 * \internal
 *----------------------------------------------------------------------------------------
 *                          C O P Y R I G H T

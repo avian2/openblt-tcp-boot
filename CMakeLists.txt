@@ -1,7 +1,7 @@
 #****************************************************************************************
 # \file         CMakeLists.txt
-# \brief        CMake descriptor file for SerialBoot command line demonstration program.
-# \ingroup      SerialBoot
+# \brief        CMake descriptor file for openblt-tcp-boot command line demonstration program.
+# \ingroup      openblt-tcp-boot
 # \internal
 #----------------------------------------------------------------------------------------
 #                          C O P Y R I G H T
@@ -35,7 +35,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Specify the project name
-project(SerialBoot)
+project(openblt-tcp-boot)
 
 # Set the port directory, which is platform specific
 IF(UNIX)
@@ -54,7 +54,7 @@ file(GLOB_RECURSE INCS "*.h")
 
 # Add sources
 add_executable(
-  SerialBoot 
+  openblt-tcp-boot 
   main.c 
   xcpmaster.c 
   srecord.c 

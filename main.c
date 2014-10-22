@@ -1,8 +1,8 @@
 // vim: ts=2 sw=2 expandtab
 /************************************************************************************//**
 * \file         main.c
-* \brief        SerialBoot command line demonstration program for OpenBLT.
-* \ingroup      SerialBoot
+* \brief        openblt-tcp-boot command line program for OpenBLT.
+* \ingroup      openblt-tcp-boot
 * \internal
 *----------------------------------------------------------------------------------------
 *                          C O P Y R I G H T
@@ -244,7 +244,7 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
 static void DisplayProgramInfo(void)
 {
   printf("-------------------------------------------------------------------------\n");
-  printf("SerialBoot version 1.00. Performs firmware updates via the serial port\n");
+  printf("openblt-tcp-boot version 1.00. Performs firmware updates via TCP/IP\n");
   printf("for a microcontroller based system that runs the OpenBLT bootloader.\n\n");
   printf("Copyright (c) by Feaser  http://www.feaser.com\n");
   printf("-------------------------------------------------------------------------\n");
@@ -258,8 +258,8 @@ static void DisplayProgramInfo(void)
 ****************************************************************************************/
 static void DisplayProgramUsage(void)
 {
-  printf("Usage:    SerialBoot -d[address] -p[port] [s-record file]\n\n");
-  printf("Example:  SerialBoot -d192.168.1.100 -p2101 myfirmware.srec\n");
+  printf("Usage:    openblt-tcp-boot -d[address] -p[port] [s-record file]\n\n");
+  printf("Example:  openblt-tcp-boot -d192.168.1.100 -p2101 myfirmware.srec\n");
   printf("          -> Connects to 192.168.1.100, port 2101, and programs the\n");
   printf("             myfirmware.srec file in non-volatile memory of the\n");
   printf("             microcontroller using OpenBLT.\n");
@@ -270,7 +270,7 @@ static void DisplayProgramUsage(void)
 /************************************************************************************//**
 ** \brief     Parses the command line arguments. A fixed amount of arguments is expected.
 **            The program should be called as: 
-**              SerialBoot -d[address] [s-record file]
+**              openblt-tcp-boot -d[address] -p[port] [s-record file]
 ** \param     argc Number of program parameters.
 ** \param     argv array to program parameter strings.
 ** \return    SB_TRUE on success, SB_FALSE otherwise.

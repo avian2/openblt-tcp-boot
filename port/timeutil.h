@@ -1,7 +1,7 @@
 /************************************************************************************//**
 * \file         port\timeutil.h
 * \brief        Time utility header file.
-* \ingroup      SerialBoot
+* \ingroup      openblt-tcp-boot
 * \internal
 *----------------------------------------------------------------------------------------
 *                          C O P Y R I G H T

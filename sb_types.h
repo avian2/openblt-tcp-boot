@@ -1,7 +1,7 @@
 /************************************************************************************//**
 * \file         sb_types.h
 * \brief        Serial Boot type definitions header file.
-* \ingroup      SerialBoot
+* \ingroup      openblt-tcp-boot
 * \internal
 *----------------------------------------------------------------------------------------
 *                          C O P Y R I G H T

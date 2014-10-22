@@ -1,7 +1,7 @@
 /************************************************************************************//**
 * \file         xcpmaster.h
 * \brief        XCP Master header file.
-* \ingroup      SerialBoot
+* \ingroup      openblt-tcp-boot
 * \internal
 *----------------------------------------------------------------------------------------
 *                          C O P Y R I G H T
