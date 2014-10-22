@@ -38,13 +38,10 @@ cmake_minimum_required(VERSION 2.8)
 project(SerialBoot)
 
 # Set the port directory, which is platform specific
-IF(WIN32)
-  set(PROJECT_PORT_DIR ${PROJECT_SOURCE_DIR}/port/win32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPLATFORM_WIN32 -D_CRT_SECURE_NO_WARNINGS")
-ELSEIF(UNIX)
+IF(UNIX)
   set(PROJECT_PORT_DIR ${PROJECT_SOURCE_DIR}/port/linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPLATFORM_LINUX")
-ENDIF(WIN32)
+ENDIF(UNIX)
 
 # Build debug version by default
 set(CMAKE_BUILD_TYPE "Debug")
