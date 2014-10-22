@@ -53,15 +53,13 @@
 /****************************************************************************************
 * Macro definitions
 ****************************************************************************************/
-/** \brief Invalid UART device/file handle. */
-#define UART_INVALID_HANDLE      (-1)
 
 /** \brief maximum number of bytes in a transmit/receive XCP packet in UART. */
 #define XCP_MASTER_UART_MAX_DATA ((XCP_MASTER_TX_MAX_DATA>XCP_MASTER_RX_MAX_DATA) ? \
                                   (XCP_MASTER_TX_MAX_DATA+1) : (XCP_MASTER_RX_MAX_DATA+1))
 
 /** \brief The smallest time in millisecond that the UART is configured for. */
-#define UART_RX_TIMEOUT_MIN_MS   (100)
+#define UART_RX_TIMEOUT_MIN_MS   (200)
 
 
 /****************************************************************************************
@@ -73,7 +71,6 @@
 * Local data declarations
 ****************************************************************************************/
 static tXcpTransportResponsePacket responsePacket;
-static sb_int32 hUart = UART_INVALID_HANDLE;
 
 static struct sockaddr_in server;
 static int sock;
@@ -85,16 +82,16 @@ static int sock;
 ** \return    SB_TRUE if successful, SB_FALSE otherwise.
 **
 ****************************************************************************************/
-sb_uint8 XcpTransportInit(sb_char *device)
+sb_uint8 XcpTransportInit(sb_char *address, sb_uint32 port)
 {
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock == -1) {
     return SB_FALSE;
   }
 
-  server.sin_addr.s_addr = inet_addr("192.168.74.131");
+  server.sin_addr.s_addr = inet_addr(address);
   server.sin_family = AF_INET;
-  server.sin_port = htons(2101);
+  server.sin_port = htons(port);
 
   if(connect(sock, (struct sockaddr*) &server, sizeof(server)) < 0) {
     return SB_FALSE;
@@ -137,7 +134,6 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
   }
 
   if(send(sock, xcpUartBuffer, xcpUartLen, 0) < 0) {
-    printf(" * send failed\n");
     return SB_FALSE;
   }
 
@@ -162,7 +158,6 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
     if ( (bytesToRead > 0) && (TimeUtilGetSystemTimeMs() >= timeoutTime) )
     {
       /* timeout occurred */
-      printf(" * read timeout\n");
       return SB_FALSE;
     }
   }
@@ -184,7 +179,6 @@ sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutM
     if ( (bytesToRead > 0) && (TimeUtilGetSystemTimeMs() >= timeoutTime) )
     {
       /* timeout occurred */
-      printf(" * read timeout\n");
       return SB_FALSE;
     }
   }

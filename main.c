@@ -1,3 +1,4 @@
+// vim: ts=2 sw=2 expandtab
 /************************************************************************************//**
 * \file         main.c
 * \brief        SerialBoot command line demonstration program for OpenBLT.
@@ -65,8 +66,11 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[]);
 /****************************************************************************************
 * Local data declarations
 ****************************************************************************************/
-/** \brief Name of the serial device, such as COM4 or /dev/ttyUSB0. */
-static sb_char serialDeviceName[32]; 
+/** \brief IP address of the device, such as 192.168.1.100 */
+static sb_char deviceAddress[32];
+
+/** \brief IP port of the device, such as 2101 */
+static sb_uint32 devicePort;
 
 /** \brief Name of the S-record file. */
 static sb_char srecordFileName[128]; 
@@ -102,7 +106,7 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
   }
 
   /* -------------------- start the firmware update procedure ------------------------ */
-  printf("Starting firmware update for \"%s\" using %s\n", srecordFileName, serialDeviceName);
+  printf("Starting firmware update for \"%s\" using %s:%d\n", srecordFileName, deviceAddress, devicePort);
 
   /* -------------------- validating the S-record file ------------------------------- */
   printf("Checking formatting of S-record file \"%s\"...", srecordFileName);
@@ -131,8 +135,8 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
   printf("-> Total data bytes: %u\n", fileParseResults.data_bytes_total);
 
   /* -------------------- Open the serial port --------------------------------------- */
-  printf("Opening serial port %s...", serialDeviceName);
-  if (XcpMasterInit(serialDeviceName) == SB_FALSE)
+  printf("Connecting to %s...", deviceAddress);
+  if (XcpMasterInit(deviceAddress, devicePort) == SB_FALSE)
   {
     printf("ERROR\n");
     SrecordClose(hSrecord);
@@ -220,7 +224,7 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
 
   /* -------------------- close the serial port -------------------------------------- */
   XcpMasterDeinit();
-  printf("Closed serial port %s\n", serialDeviceName);
+  printf("Closing connection to %s\n", deviceAddress);
 
   /* -------------------- close the S-record file ------------------------------------ */
   SrecordClose(hSrecord);
@@ -254,16 +258,11 @@ static void DisplayProgramInfo(void)
 ****************************************************************************************/
 static void DisplayProgramUsage(void)
 {
-  printf("Usage:    SerialBoot -d[device] [s-record file]\n\n");
-#ifdef PLATFORM_WIN32
-  printf("Example:  SerialBoot -dCOM4 -b57600 myfirmware.s19\n");
-  printf("          -> Connects to COM4, configures a communication speed of 57600\n");
-#else
-  printf("Example:  SerialBoot -d/dev/ttyS0 -b57600 myfirmware.s19\n");
-  printf("          -> Connects to ttyS0, configures a communication speed of 57600\n");
-#endif
-  printf("             bits/second and programs the myfirmware.s19 file in non-\n");
-  printf("             volatile memory of the microcontroller using OpenBLT.\n");
+  printf("Usage:    SerialBoot -d[address] -p[port] [s-record file]\n\n");
+  printf("Example:  SerialBoot -d192.168.1.100 -p2101 myfirmware.srec\n");
+  printf("          -> Connects to 192.168.1.100, port 2101, and programs the\n");
+  printf("             myfirmware.srec file in non-volatile memory of the\n");
+  printf("             microcontroller using OpenBLT.\n");
   printf("-------------------------------------------------------------------------\n");
 } /*** end of DisplayProgramUsage ***/
 
@@ -271,7 +270,7 @@ static void DisplayProgramUsage(void)
 /************************************************************************************//**
 ** \brief     Parses the command line arguments. A fixed amount of arguments is expected.
 **            The program should be called as: 
-**              SerialBoot -d[device] -b[baudrate] [s-record file]
+**              SerialBoot -d[address] [s-record file]
 ** \param     argc Number of program parameters.
 ** \param     argv array to program parameter strings.
 ** \return    SB_TRUE on success, SB_FALSE otherwise.
@@ -281,10 +280,11 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
 {
   sb_uint8 paramIdx;
   sb_uint8 paramDfound = SB_FALSE;
+  sb_uint8 paramPfound = SB_FALSE;
   sb_uint8 srecordfound = SB_FALSE;
 
   /* make sure the right amount of arguments are given */
-  if (argc != 3)
+  if (argc != 4)
   {
     return SB_FALSE;
   }
@@ -294,12 +294,19 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
    */
   for (paramIdx=1; paramIdx<argc; paramIdx++)
   {
-    /* is this the device name? */
+    /* is this the device address? */
     if ( (argv[paramIdx][0] == '-') && (argv[paramIdx][1] == 'd') && (paramDfound == SB_FALSE) )
     {
       /* copy the device name and set flag that this parameter was found */
-      strcpy(serialDeviceName, &argv[paramIdx][2]);
+      strcpy(deviceAddress, &argv[paramIdx][2]);
       paramDfound = SB_TRUE;
+    }
+    /* is this the device port? */
+    else if ( (argv[paramIdx][0] == '-') && (argv[paramIdx][1] == 'p') && (paramPfound == SB_FALSE) )
+    {
+      /* extract the baudrate and set flag that this parameter was found */
+      sscanf(&argv[paramIdx][2], "%u", &devicePort);
+      paramPfound = SB_TRUE;
     }
     /* still here so it must be the filename */
     else if (srecordfound == SB_FALSE)
@@ -311,7 +318,7 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
   }
   
   /* verify if all parameters were found */
-  if ( (paramDfound == SB_FALSE) || (srecordfound == SB_FALSE) )
+  if ( (paramDfound == SB_FALSE) || (paramPfound == SB_FALSE) || (srecordfound == SB_FALSE) )
   {
     return SB_FALSE;
   }

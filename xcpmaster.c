@@ -107,14 +107,14 @@ static tXcpTransportResponsePacket responsePacket;
 
 /************************************************************************************//**
 ** \brief     Initializes the XCP master protocol layer.
-** \param     device Serial communication device name. For example "COM4".
+** \param     address Device address. For example "192.168.1.100".
 ** \return    SB_TRUE is successful, SB_FALSE otherwise.
 **
 ****************************************************************************************/
-sb_uint8 XcpMasterInit(sb_char *device)
+sb_uint8 XcpMasterInit(sb_char *address, sb_uint32 port)
 {
   /* initialize the underlying transport layer that is used for the communication */
-  return XcpTransportInit(device);
+  return XcpTransportInit(address, port);
 } /*** end of XcpMasterInit ***/
 
 
