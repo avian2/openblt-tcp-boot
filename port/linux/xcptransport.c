@@ -8,7 +8,7 @@
 *                          C O P Y R I G H T
 *----------------------------------------------------------------------------------------
 *   Copyright (c) 2014  by Feaser    http://www.feaser.com    All rights reserved
-*   Copyright (c) 2014  by IJS       tomaz.solc@ijs.si
+*   Copyright (c) 2014  by SensorLab, Jozef Stefan Institute  tomaz.solc@ijs.si
 *
 *----------------------------------------------------------------------------------------
 *                            L I C E N S E

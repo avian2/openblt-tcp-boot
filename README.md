@@ -32,8 +32,8 @@ openblt-tcp-boot is based on SerialBoot, which is part of the OpenBLT
 distribution. Original OpenBLT code has been modified by Tomaz Solc.
 
 
-Copyright (c) 2014  by Feaser   http://www.feaser.com    All rights reserved
-Copyright (c) 2014  by IJS      tomaz.solc@ijs.si
+Copyright (c) 2014  by Feaser   http://www.feaser.com    All rights reserved  
+Copyright (c) 2014  by SensorLab, Jozef Stefan Institute tomaz.solc@ijs.si
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
