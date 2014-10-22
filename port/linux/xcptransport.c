@@ -38,6 +38,7 @@
 #include <assert.h>                                   /* assertion module              */
 #include <sb_types.h>                                 /* C types                       */
 #include <stdio.h>                                    /* standard I/O library          */
+#include <stdlib.h>
 #include <string.h>                                   /* string function definitions   */
 #include <unistd.h>                                   /* UNIX standard functions       */
 #include <fcntl.h>                                    /* file control definitions      */
@@ -47,6 +48,7 @@
 #include "timeutil.h"                                 /* time utility module           */
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 
 
@@ -75,6 +77,12 @@ static tXcpTransportResponsePacket responsePacket;
 static struct sockaddr_in server;
 static int sock;
 
+static void XcpTransportPipe(int signum)
+{
+  printf("remote closed connection\n");
+  abort();
+}
+
 
 /************************************************************************************//**
 ** \brief     Initializes the communication interface used by this transport layer.
@@ -96,6 +104,8 @@ sb_uint8 XcpTransportInit(sb_char *address, sb_uint32 port)
   if(connect(sock, (struct sockaddr*) &server, sizeof(server)) < 0) {
     return SB_FALSE;
   }
+
+  signal(SIGPIPE, XcpTransportPipe);
   return SB_TRUE;
 } /*** end of XcpTransportInit ***/
 
@@ -207,6 +217,7 @@ tXcpTransportResponsePacket *XcpTransportReadResponsePacket(void)
 ****************************************************************************************/
 void XcpTransportClose(void)
 {
+  signal(SIGPIPE, SIG_DFL);
   close(sock);
 } /*** end of XcpTransportClose ***/
 
