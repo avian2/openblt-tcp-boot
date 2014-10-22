@@ -67,7 +67,6 @@
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-static speed_t   XcpTransportGetBaudrateMask(sb_uint32 baudrate);
 
 
 /****************************************************************************************
@@ -83,11 +82,10 @@ static int sock;
 /************************************************************************************//**
 ** \brief     Initializes the communication interface used by this transport layer.
 ** \param     device Serial communication device name. For example "COM4".
-** \param     baudrate Communication speed in bits/sec.
 ** \return    SB_TRUE if successful, SB_FALSE otherwise.
 **
 ****************************************************************************************/
-sb_uint8 XcpTransportInit(sb_char *device, sb_uint32 baudrate)
+sb_uint8 XcpTransportInit(sb_char *device)
 {
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock == -1) {
@@ -217,39 +215,6 @@ void XcpTransportClose(void)
 {
   close(sock);
 } /*** end of XcpTransportClose ***/
-
-
-/************************************************************************************//**
-** \brief     Converts the baudrate value to a bitmask value used by termios. Currently
-**            supports the most commonly used baudrates.
-** \return    none.
-**
-****************************************************************************************/
-static speed_t XcpTransportGetBaudrateMask(sb_uint32 baudrate)
-{
-  speed_t result;
-
-  switch (baudrate)
-  {
-    case 115200:
-      result = B115200;
-      break;
-    case 57600:
-      result = B57600;
-      break;
-    case 38400:
-      result = B38400;
-      break;
-    case 19200:
-      result = B19200;
-      break;
-    case 9600:
-    default:
-      result = B9600;
-      break;
-  }
-  return result;
-} /*** end of XcpTransportGetBaudrateMask ***/
 
 
 /*********************************** end of xcptransport.c *****************************/

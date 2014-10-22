@@ -108,14 +108,13 @@ static tXcpTransportResponsePacket responsePacket;
 /************************************************************************************//**
 ** \brief     Initializes the XCP master protocol layer.
 ** \param     device Serial communication device name. For example "COM4".
-** \param     baudrate Communication speed in bits/sec.
 ** \return    SB_TRUE is successful, SB_FALSE otherwise.
 **
 ****************************************************************************************/
-sb_uint8 XcpMasterInit(sb_char *device, sb_uint32 baudrate)
+sb_uint8 XcpMasterInit(sb_char *device)
 {
   /* initialize the underlying transport layer that is used for the communication */
-  return XcpTransportInit(device, baudrate);
+  return XcpTransportInit(device);
 } /*** end of XcpMasterInit ***/
 
 

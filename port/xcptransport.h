@@ -46,7 +46,7 @@ typedef struct
 /****************************************************************************************
 * EFunction prototypes
 ****************************************************************************************/
-sb_uint8 XcpTransportInit(sb_char *device, sb_uint32 baudrate);
+sb_uint8 XcpTransportInit(sb_char *device);
 sb_uint8 XcpTransportSendPacket(sb_uint8 *data, sb_uint8 len, sb_uint16 timeOutMs);
 tXcpTransportResponsePacket *XcpTransportReadResponsePacket(void);
 void XcpTransportClose(void);

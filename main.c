@@ -68,9 +68,6 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[]);
 /** \brief Name of the serial device, such as COM4 or /dev/ttyUSB0. */
 static sb_char serialDeviceName[32]; 
 
-/** \brief Serial communication speed in bits per second. */
-static sb_uint32 serialBaudrate; 
-
 /** \brief Name of the S-record file. */
 static sb_char srecordFileName[128]; 
 
@@ -105,7 +102,7 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
   }
 
   /* -------------------- start the firmware update procedure ------------------------ */
-  printf("Starting firmware update for \"%s\" using %s @ %u bits/s\n", srecordFileName, serialDeviceName, serialBaudrate);
+  printf("Starting firmware update for \"%s\" using %s\n", srecordFileName, serialDeviceName);
 
   /* -------------------- validating the S-record file ------------------------------- */
   printf("Checking formatting of S-record file \"%s\"...", srecordFileName);
@@ -135,7 +132,7 @@ sb_int32 main(sb_int32 argc, sb_char *argv[])
 
   /* -------------------- Open the serial port --------------------------------------- */
   printf("Opening serial port %s...", serialDeviceName);
-  if (XcpMasterInit(serialDeviceName, serialBaudrate) == SB_FALSE)
+  if (XcpMasterInit(serialDeviceName) == SB_FALSE)
   {
     printf("ERROR\n");
     SrecordClose(hSrecord);
@@ -257,7 +254,7 @@ static void DisplayProgramInfo(void)
 ****************************************************************************************/
 static void DisplayProgramUsage(void)
 {
-  printf("Usage:    SerialBoot -d[device] -b[baudrate] [s-record file]\n\n");
+  printf("Usage:    SerialBoot -d[device] [s-record file]\n\n");
 #ifdef PLATFORM_WIN32
   printf("Example:  SerialBoot -dCOM4 -b57600 myfirmware.s19\n");
   printf("          -> Connects to COM4, configures a communication speed of 57600\n");
@@ -284,11 +281,10 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
 {
   sb_uint8 paramIdx;
   sb_uint8 paramDfound = SB_FALSE;
-  sb_uint8 paramBfound = SB_FALSE;
   sb_uint8 srecordfound = SB_FALSE;
 
   /* make sure the right amount of arguments are given */
-  if (argc != 4)
+  if (argc != 3)
   {
     return SB_FALSE;
   }
@@ -305,13 +301,6 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
       strcpy(serialDeviceName, &argv[paramIdx][2]);
       paramDfound = SB_TRUE;
     }
-    /* is this the device name? */
-    else if ( (argv[paramIdx][0] == '-') && (argv[paramIdx][1] == 'b') && (paramBfound == SB_FALSE) )
-    {
-      /* extract the baudrate and set flag that this parameter was found */
-      sscanf(&argv[paramIdx][2], "%u", &serialBaudrate);
-      paramBfound = SB_TRUE;
-    }
     /* still here so it must be the filename */
     else if (srecordfound == SB_FALSE)
     {
@@ -322,7 +311,7 @@ static sb_uint8 ParseCommandLine(sb_int32 argc, sb_char *argv[])
   }
   
   /* verify if all parameters were found */
-  if ( (paramDfound == SB_FALSE) || (paramBfound == SB_FALSE) || (srecordfound == SB_FALSE) )
+  if ( (paramDfound == SB_FALSE) || (srecordfound == SB_FALSE) )
   {
     return SB_FALSE;
   }

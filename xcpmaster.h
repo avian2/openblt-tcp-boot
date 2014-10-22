@@ -56,7 +56,7 @@
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-sb_uint8 XcpMasterInit(sb_char *device, sb_uint32 baudrate);
+sb_uint8 XcpMasterInit(sb_char *device);
 void     XcpMasterDeinit(void);
 sb_uint8 XcpMasterConnect(void);
 sb_uint8 XcpMasterDisconnect(void);
