@@ -63,5 +63,6 @@ add_executable(
   ${INCS}
 )
 
+install(TARGETS openblt-tcp-boot RUNTIME DESTINATION bin)
 
 #*********************************** end of CMakeLists.txt ******************************
